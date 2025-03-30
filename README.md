@@ -27,7 +27,8 @@ You can either download the source code and run it yourself from there or just d
 6. Profit. xd
 
 
-# Known Issues
+# KNOWN ISSUES
 - the redundant ahh all categories button
 - you can only select specific button mode. it will not allow you to use all key mode.
 - ugly-ass UI design. I don't know. I'm just happy that it is working (it's an excuse because I don't know how to work on it)
+- skill issue (that's me xd)
