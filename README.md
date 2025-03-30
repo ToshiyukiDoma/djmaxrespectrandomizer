@@ -32,3 +32,8 @@ You can either download the source code and run it yourself from there or just d
 - you can only select specific button mode. it will not allow you to use all key mode.
 - ugly-ass UI design. I don't know. I'm just happy that it is working (it's an excuse because I don't know how to work on it)
 - skill issue (that's me xd)
+
+
+# EXTRAS
+- If you want to update the list on your own, you can use this spreadsheet for your reference.
+- https://docs.google.com/spreadsheets/d/1RawRrqJnYOXTjaY9s3JC_-HBQI4CO68gVCJx3B0HoAY/edit?usp=sharing
