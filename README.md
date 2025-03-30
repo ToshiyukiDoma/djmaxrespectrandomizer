@@ -1,5 +1,7 @@
 # DJMAX RESPECT RANDOMIZER
 
+![image](https://github.com/user-attachments/assets/f8843a57-2199-4c59-81b6-50f4e80dfb48)
+
 A very crappy-looking song randomizer for DJMAX RESPECT V
 
 Purely made with Google Gemini. I don't know how to code but I somehow know what I need to do to make it happen. xd
