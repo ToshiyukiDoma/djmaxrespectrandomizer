@@ -9,7 +9,7 @@ import os
 def get_songs_by_categories(csv_file, selected_categories: List[str], key_mode_filter: str,
                            include_nm_hd_mx: bool, include_sc: bool,
                            nm_hd_mx_min_level: int, nm_hd_mx_max_level: int,
-                           sc_min_level: int, sc_max_level: int) -> List[Tuple[str, str, str]]:
+                           sc_min_level: int, sc_max_level: int) -> List[Tuple[str, str, str, str]]:
     """
     Reads a CSV file and returns a list of song titles with their corresponding difficulty and level,
     filtered by multiple categories, key mode, and separate level ranges for NM/HD/MX and SC.
@@ -28,8 +28,8 @@ def get_songs_by_categories(csv_file, selected_categories: List[str], key_mode_f
         sc_max_level (int): The maximum level for SC difficulty.
 
     Returns:
-        List[Tuple[str, str, str]]: A list of tuples, where each tuple contains the song title,
-                                     the difficulty (e.g., "4B - NM"), and the level.
+        List[Tuple[str, str, str, str]]: A list of tuples, where each tuple contains the song title,
+                                     the difficulty (e.g., "4B - NM"), the level, and the category.
     """
 
     try:
@@ -49,13 +49,13 @@ def get_songs_by_categories(csv_file, selected_categories: List[str], key_mode_f
                                 if level_str != '0' and level_str.isdigit():  # Ensure level is a number
                                     level = int(level_str)
                                     if nm_hd_mx_min_level <= level <= nm_hd_mx_max_level:
-                                        song_data.append((title, f"{key_mode_filter} - {diff}", level_str))
+                                        song_data.append((title, f"{key_mode_filter} {diff}", level_str, category)) # added category
                         if include_sc:
                             level_str = row[header.index(f"{key_mode_filter} SC")]
                             if level_str != '0' and level_str.isdigit():
                                 level = int(level_str)
                                 if sc_min_level <= level <= sc_max_level:
-                                    song_data.append((title, f"{key_mode_filter} - SC", level_str))
+                                    song_data.append((title, f"{key_mode_filter} SC", level_str, category)) # added category
 
                     elif not key_mode_filter or key_mode_filter == "All" or not key_mode_filter:
                          if include_nm_hd_mx:
@@ -66,7 +66,7 @@ def get_songs_by_categories(csv_file, selected_categories: List[str], key_mode_f
                                     if level_str != '0' and level_str.isdigit():
                                         level = int(level_str)
                                         if nm_hd_mx_min_level <= level <= nm_hd_mx_max_level:
-                                            song_data.append((title, f"{row[2][:2]} - {diff}", level_str))
+                                            song_data.append((title, f"{row[2][:2]} {diff}", level_str, category)) # added category
                          if include_sc:
                             key = f"{row[2][:2]} SC"
                             if key in header:
@@ -74,12 +74,12 @@ def get_songs_by_categories(csv_file, selected_categories: List[str], key_mode_f
                                 if level_str != '0' and level_str.isdigit():
                                     level = int(level_str)
                                     if sc_min_level <= level <= sc_max_level:
-                                        song_data.append((title, f"{row[2][:2]} - SC", level_str))
+                                        song_data.append((title, f"{row[2][:2]} SC", level_str, category)) # added category
             return song_data
     except FileNotFoundError:
-        return [("Error: CSV file not found.", "", "")]
+        return [("Error: CSV file not found.", "", "", "")]
     except Exception as e:
-        return [(f"An error occurred: {e}", "", "")]
+        return [(f"An error occurred: {e}", "", "", "")]
 
 
 
@@ -111,16 +111,16 @@ def load_full_category_names(category_file):
         print(f"An error occurred while loading categories: {e}")
     return full_category_names
 
-def save_to_history(song_data: Tuple[str, str, str]):
+def save_to_history(song_data: Tuple[str, str, str, str]):
     """
     Saves the selected song to the history file.
 
     Args:
-        song_data (Tuple[str, str, str]): A tuple containing the song title, difficulty, and level.
+        song_data (Tuple[str, str, str, str]): A tuple containing the song title, difficulty, level, and category.
     """
     try:
         with open("history.txt", "a", encoding="utf-8") as file:
-            file.write(f"{song_data[0]},{song_data[1]},{song_data[2]}\n")
+            file.write(f"{song_data[0]},{song_data[1]},{song_data[2]}, {song_data[3]}\n") # added category to history
     except Exception as e:
         print(f"An error occurred while saving to history: {e}")
 
@@ -129,7 +129,7 @@ def load_history():
     Loads the song history from the history file.
 
     Returns:
-        List[Tuple[str, str, str]]: A list of tuples, where each tuple contains the song title,
+        List[Tuple[str, str, str, str]]: A list of tuples, where each tuple contains the song title,
                                      difficulty, and level.
     """
     history_data = []
@@ -137,13 +137,21 @@ def load_history():
         with open("history.txt", "r", encoding="utf-8") as file:
             for line in file:
                 song_data = line.strip().split(",")
-                if len(song_data) == 3:
+                if len(song_data) == 4:
                     history_data.append(tuple(song_data))
     except FileNotFoundError:
         print("History file not found.  Creating a new one.")
     except Exception as e:
         print(f"An error occurred while loading history: {e}")
     return history_data
+
+# Define difficulty colors
+difficulty_colors = {
+    "SC": "#ff00ff",
+    "MX": "#ff0000",
+    "HD": "#ff8200",
+    "NM": "#ffd966"
+}
 
 def display_song():
     """
@@ -166,22 +174,30 @@ def display_song():
                                      nm_hd_mx_min_level_value, nm_hd_mx_max_level_value,
                                      sc_min_level_value, sc_max_level_value)  # Replace with your CSV file name
     if songs:
-        song, difficulty, level = random.choice(songs)
-        display_text = song
+        song, difficulty, level, category = random.choice(songs) # added category
+        # Get the full category name
+        full_category_name = full_category_names.get(category, {'full_name': category}).get('full_name')
+        display_text = f"{full_category_name}\n{song} ({difficulty})\n"  # Include full category name
+
         color = "white"  # Default color
         if selected_key_mode != "All" and selected_key_mode and difficulty and level:
-            display_text = f"{song} ({difficulty}) [{level}]"
-            if "NM" in difficulty:
-                color = "yellow"
-            elif "HD" in difficulty:
-                color = "orange"
-            elif "MX" in difficulty:
-                color = "red"
+            diff_short = difficulty.split()[-1]  # Get "NM", "HD", "MX", or "SC"
+            color = difficulty_colors.get(diff_short, "white")  # Get color, default to white if not found.
+            if "NM" in difficulty or "HD" in difficulty or "MX" in difficulty:
+                stars = "☆" * int(level)
             elif "SC" in difficulty:
-                color = "purple"
+                stars = "★" * int(level)
+            else:
+                stars = "N/A"
+            # Add spaces every 5 stars
+            stars = " ".join([stars[i:i+5] for i in range(0, len(stars), 5)])
+            display_text += stars
+        else:
+            display_text = f"{full_category_name}\n{song}\n" # show category even if not detailed.
+
         song_label.config(text=display_text, font=title_font, fg=color,  # Apply the title font
-                         bg="black", highlightthickness=1, highlightcolor="white")  # Set black background
-        save_to_history((song, difficulty, level))  # Save to history
+                         bg="black", highlightthickness=1, highlightcolor="white", justify=tk.CENTER)  # Set black background and center text
+        save_to_history((song, difficulty, level, category))  # Save to history # added category
         update_history_display() # Update the history tab
 
     else:
@@ -206,7 +222,20 @@ def update_history_display():
     history_data = load_history()
     history_listbox.delete(0, tk.END)  # Clear the listbox
     for song_data in reversed(history_data): # reversed the history data.
-        history_listbox.insert(tk.END, f"{song_data[0]} ({song_data[1]}) [{song_data[2]}]")
+        # Get the full category name
+        # full_category_name = full_category_names.get(song_data[3], {'full_name': song_data[3]}).get('full_name')
+        # display_text = f"{full_category_name}\n{song_data[0]} ({song_data[1]})\n"
+
+        display_text = f"[{song_data[3].strip()}] {song_data[0]} ({song_data[1]}) " # removed space
+        if "NM" in song_data[1] or "HD" in song_data[1] or "MX" in song_data[1]:
+            stars = "☆" * int(song_data[2])
+        elif "SC" in song_data[1]:
+            stars = "★" * int(song_data[2])
+        else:
+            stars = "N/A"
+        stars = " ".join([stars[i:i+5] for i in range(0, len(stars), 5)])
+        display_text += stars
+        history_listbox.insert(tk.END, display_text)
 
 # Create the main window
 window = tk.Tk()
@@ -300,7 +329,7 @@ for short_name, category_data in full_category_names.items():
     source = category_data['source']
     if source not in categories_by_source:
         categories_by_source[source] = []
-    categories_by_source[source].append(short_name)
+    categories_by_source[source].append(short_name) # changed from categories_by_source.append(short_name)
 
 # Iterate through the sources and create buttons, adding separators
 row_counter = 0
@@ -415,7 +444,7 @@ sc_toggle = tk.Checkbutton(sc_frame, text="Include SC", variable=sc_toggle_var,
 sc_toggle.grid(row=0, column=0, sticky='w')  # Use grid for layout
 
 sc_level_label = tk.Label(sc_frame, text="Level:", font=default_font)  # Apply the default font
-sc_level_label.grid(row=0, column=1, sticky='w')  # Label on the right
+sc_level_label.grid(row=0, column=1, sticky='w')# Label on the right
 
 sc_min_level_var = tk.IntVar(value=1)
 sc_min_level_spinbox = tk.Spinbox(sc_frame, from_=1, to=15, textvariable=sc_min_level_var, width=5,
@@ -448,7 +477,7 @@ clear_history_button.pack(pady=10)
 
 # Credits Label
 credits_label = tk.Label(history_tab,
-                        text="DJMAX Song Randomizer ver. 2.1\nCreated with Google Gemini by Toshiyuki Doma\nLast Update: 2025/03/31",
+                        text="DJMAX Song Randomizer ver. 2.1.2\nCreated with Google Gemini by Toshiyuki Doma\nLast Update: 2025/03/31",
                         font=("Helvetica", 10),  # Smaller font size
                         fg="gray")
 credits_label.place(relx=1.0, rely=1.0, anchor=tk.SE, x=-10, y=-10)  # Position at bottom right
