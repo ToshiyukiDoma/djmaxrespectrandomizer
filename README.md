@@ -5,7 +5,8 @@
 A very crappy-looking song randomizer for DJMAX RESPECT V
 
 Purely made with Google Gemini. I don't know how to code but I somehow know what I need to do to make it happen. xd
-Heavily inspired from the randomizer that I found out there but with beautiful UI and usage design. It's just that, I hate the RNG of its song selection and it is quite buggy but very understandable.
+
+This is heavily inspired from the randomizer that I found out there but that one has beautiful UI and usage design. It's just that, I hate the RNG of its song selection and it is quite buggy but knowing how this thing took me, it's just very understandable.
 
 Will update the song list from time to time because yes. xd
 
